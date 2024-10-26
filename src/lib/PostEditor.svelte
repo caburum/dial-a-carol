@@ -46,13 +46,6 @@
 		input$use={[autoGrowHeight]}
 		value={initialData?.contentText || ''}
 	/>
-	{#if action === 'create'}
-		<Select label="Type" hiddenInput input$name="type" value="normal">
-			{#each Object.entries(postTypes) as [id, label]}
-				<Option value={id}>{label}</Option>
-			{/each}
-		</Select>
-	{/if}
 </svelte:component>
 <svelte:component this={actionsComponent}>
 	{#if action === 'edit'}

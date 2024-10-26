@@ -1,5 +1,5 @@
 {
-	"name": "dial-a-carol-admin",
+	"name": "dial-a-carol",
 	"version": "0.0.1",
 	"private": true,
 	"author": "Calum Dingwall (https://github.com/caburum)",
@@ -42,6 +42,7 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@vercel/edge-config": "^1.3.0"
+		"@vercel/edge-config": "^1.3.0",
+		"mongodb": "^6.10.0"
 	}
 }
