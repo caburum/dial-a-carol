@@ -37,11 +37,11 @@
 </TopAppBar>
 
 <main style="max-width: 90%; margin: 0 auto;" class:center={!$initialAuthPassword}>
-	{#if $initialAuthPassword}
-		<slot />
-	{:else}
+	<!-- {#if $initialAuthPassword} -->
+	<slot />
+	<!-- {:else}
 		<Authenticate />
-	{/if}
+	{/if} -->
 </main>
 
 <Dialog
