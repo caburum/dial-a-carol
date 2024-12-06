@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+
 	interface Props {
 		data: PageData;
 	}
@@ -51,5 +52,5 @@
 </form>
 
 {#if location}
-	<p>{location}</p>
+	<p>{JSON.stringify(location)}</p>
 {/if}
