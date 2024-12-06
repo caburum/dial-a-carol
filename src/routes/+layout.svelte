@@ -31,11 +31,11 @@
 				class="material-icons"
 				aria-label="Logout"
 				title="Logout"
-				on:click={() => {
+				onclick={() => {
 					$initialAuthPassword = undefined;
 				}}>logout</IconButton
 			>
-			<IconButton class="material-icons" aria-label="Refresh" title="Refresh" on:click={() => invalidateAll()}
+			<IconButton class="material-icons" aria-label="Refresh" title="Refresh" onclick={() => invalidateAll()}
 				>refresh</IconButton
 			>
 		</TAB.Section>
@@ -54,7 +54,7 @@
 	open={$reAuthenticateCallback !== undefined}
 	scrimClickAction=""
 	escapeKeyAction=""
-	on:SMUIDialog:closed={() => {
+	onSMUIDialogClosed={() => {
 		$reAuthenticateCallback?.(undefined);
 	}}
 >

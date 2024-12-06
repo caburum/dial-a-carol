@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { preventDefault } from 'svelte/legacy';
-
 	import Button, { Label } from '@smui/button';
 	import Card, * as C from '@smui/card';
 	import Dialog from '@smui/dialog';
@@ -66,7 +64,7 @@
 								<Label>remove</Label>
 							</Button>
 						</form>
-						<Button variant="raised" disabled={$loading} on:click={() => editingForm.set(entry)}>
+						<Button variant="raised" disabled={$loading} onclick={() => editingForm.set(entry)}>
 							<Label>edit</Label>
 						</Button>
 					</C.Actions>

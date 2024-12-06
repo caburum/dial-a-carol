@@ -8,7 +8,7 @@
 	<h1>Error {$page.status}: {$page.error?.message}</h1>
 	<Button
 		variant="raised"
-		on:click={() =>
+		onclick={() =>
 			goto('/', {
 				invalidateAll: true
 			})}
