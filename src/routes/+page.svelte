@@ -1,10 +1,14 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	export let data: PageData;
+	interface Props {
+		data: PageData;
+	}
 
-	let countryCode = 1;
-	let phone = '';
-	let location = '';
+	let { data }: Props = $props();
+
+	let countryCode = $state(1);
+	let phone = $state('');
+	let location = $state('');
 
 	async function geocode() {
 		const res = await fetch('/api/geocode', {
@@ -23,7 +27,7 @@
 	}
 </script>
 
-<form on:submit={geocode}>
+<form onsubmit={geocode}>
 	<label>
 		<span>Country code:</span><br />
 		<input type="number" bind:value={countryCode} />
@@ -35,7 +39,7 @@
 			bind:value={phone}
 			pattern="[0-9]*"
 			inputmode="numeric"
-			on:keypress={(e) => {
+			onkeypress={(e) => {
 				if (e.key.length === 1 && !/[0-9]/.test(e.key)) {
 					e.preventDefault();
 				}

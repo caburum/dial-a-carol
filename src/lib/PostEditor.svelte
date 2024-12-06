@@ -2,28 +2,31 @@
 	import Button, { Label } from '@smui/button';
 	import * as C from '@smui/card';
 	import * as D from '@smui/dialog';
-	import Select, { Option } from '@smui/select';
 	import Textfield from '@smui/textfield';
 	import { autoGrowHeight } from '$lib/actions';
 	import { editingForm, loading } from '$lib/form';
 	import type { ActionData } from '../routes/$types';
 
 	// pass page's form data to the editor
-	export let form: ActionData;
 
-	export let action: string;
+	interface Props {
+		form: ActionData;
+		action: string;
+	}
+
+	let { form, action }: Props = $props();
 
 	let initialData = $editingForm;
 
-	let contentComponent = action === 'edit' ? D.Content : C.Content;
-	let actionsComponent = action === 'edit' ? D.Actions : C.Actions;
+	const ContentComponent = $derived(action === 'edit' ? D.Content : C.Content);
+	const ActionsComponent = $derived(action === 'edit' ? D.Actions : C.Actions);
 </script>
 
 {#if action === 'edit'}
 	<D.Title>Editing "{initialData?.title || ''}"</D.Title>
 {/if}
 
-<svelte:component this={contentComponent} class="formContent">
+<ContentComponent class="formContent">
 	{#if form?.action === 'create' && form?.message}
 		<p class="message">{form.message}</p>
 	{/if}
@@ -46,8 +49,8 @@
 		input$use={[autoGrowHeight]}
 		value={initialData?.contentText || ''}
 	/>
-</svelte:component>
-<svelte:component this={actionsComponent}>
+</ContentComponent>
+<ActionsComponent>
 	{#if action === 'edit'}
 		<Button variant="raised" action="close" type="button">
 			<Label>Cancel</Label>
@@ -60,4 +63,4 @@
 			<Label>Send Notification</Label>
 		</Button>
 	{/if}
-</svelte:component>
+</ActionsComponent>

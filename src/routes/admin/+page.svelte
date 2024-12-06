@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { preventDefault } from 'svelte/legacy';
+
 	import Button, { Label } from '@smui/button';
 	import Card, * as C from '@smui/card';
 	import Dialog from '@smui/dialog';
@@ -7,11 +9,15 @@
 	import type { PageData, ActionData } from './$types';
 	import PostEditor from '$lib/PostEditor.svelte';
 
-	export let data: PageData;
-	export let form: ActionData;
+	interface Props {
+		data: PageData;
+		form: ActionData;
+	}
+
+	let { data, form }: Props = $props();
 </script>
 
-<form method="POST" action="?/edit" autocomplete="off" on:submit|preventDefault={handleSubmit} class="form">
+<form method="POST" action="?/edit" autocomplete="off" onsubmit={handleSubmit} class="form">
 	<Dialog open={$editingForm !== undefined} scrimClickAction="" escapeKeyAction="" surface$style="min-width: 600px">
 		{#key $editingForm}
 			<PostEditor action="edit" {form} />
@@ -21,7 +27,7 @@
 
 <h1>Publish a New Notification</h1>
 
-<form method="POST" action="?/create" autocomplete="off" on:submit|preventDefault={handleSubmit}>
+<form method="POST" action="?/create" autocomplete="off" onsubmit={handleSubmit}>
 	<Card class="form">
 		<PostEditor action="create" {form} />
 	</Card>
@@ -53,7 +59,7 @@
 							class="mdc-card__action mdc-card__action--button"
 							method="POST"
 							action="?/remove"
-							on:submit|preventDefault={handleSubmit}
+							onsubmit={handleSubmit}
 						>
 							<input type="hidden" name="id" value={entry.id} />
 							<Button variant="raised" type="submit" disabled={$loading}>

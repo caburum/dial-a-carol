@@ -7,9 +7,13 @@
 	import type { SubmitFunction } from '../routes/$types';
 	import { initialAuthPassword, reAuthenticateCallback } from './auth';
 
-	export let cancelable = false;
+	interface Props {
+		cancelable?: boolean;
+	}
 
-	let message: string | undefined;
+	let { cancelable = false }: Props = $props();
+
+	let message: string | undefined = $state();
 	const handler: SubmitFunction = ({ formData }) => {
 		const password = formData.get('password');
 

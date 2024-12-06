@@ -85,9 +85,24 @@ export const geocode = async (countryCode: number, phone: string) => {
 		result = countries[countryCode];
 	}
 
-	return result;
-
 	// todo: text to coordinates
 	// https://nominatim.openstreetmap.org/ui/search.html
 	// https://developers.google.com/maps/documentation/geocoding/overview
+
+	// https://nominatim.openstreetmap.org/search?q=New%20Jersey&limit=1&format=jsonv2
+	const params = new URLSearchParams({
+		q: 'New Jersey',
+		limit: '1',
+		format: 'jsonv2'
+	});
+	const response = await fetch(`https://nominatim.openstreetmap.org/search?${params}`);
+	const data = await response.json();
+
+	console.log(data);
+
+	if (data.length === 0) {
+		throw new Error('no geocode data found');
+	}
+
+	return data[0];
 };

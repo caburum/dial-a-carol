@@ -8,6 +8,12 @@
 	import Authenticate from '$lib/Authenticate.svelte';
 	import { loading } from '$lib/form';
 	import LoadingRing from '$lib/LoadingRing.svelte';
+
+	interface Props {
+		children?: import('svelte').Snippet;
+	}
+
+	let { children }: Props = $props();
 </script>
 
 <svelte:head>
@@ -38,7 +44,7 @@
 
 <main style="max-width: 90%; margin: 0 auto;" class:center={!$initialAuthPassword}>
 	<!-- {#if $initialAuthPassword} -->
-	<slot />
+	{@render children?.()}
 	<!-- {:else}
 		<Authenticate />
 	{/if} -->

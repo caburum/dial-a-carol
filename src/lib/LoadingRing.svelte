@@ -1,7 +1,8 @@
 <script>
 	import IconButton, { Icon } from '@smui/icon-button';
 
-	export let loading = true;
+	/** @type {{loading?: boolean}} */
+	let { loading = true } = $props();
 </script>
 
 {#if loading}

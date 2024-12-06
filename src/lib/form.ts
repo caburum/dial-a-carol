@@ -6,7 +6,9 @@ import { writable, type Writable } from 'svelte/store';
 
 export const loading = writable(false);
 
-export async function handleSubmit(event: { currentTarget: EventTarget & HTMLFormElement }) {
+export async function handleSubmit(event: Event & { currentTarget: EventTarget & HTMLFormElement }) {
+	event.preventDefault();
+
 	const body = new FormData(event.currentTarget),
 		formElement = event.currentTarget;
 
