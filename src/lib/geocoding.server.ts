@@ -85,13 +85,12 @@ export const geocode = async (countryCode: number, phone: string) => {
 		result = countries[countryCode];
 	}
 
-	// todo: text to coordinates
+	// text to coordinates
 	// https://nominatim.openstreetmap.org/ui/search.html
 	// https://developers.google.com/maps/documentation/geocoding/overview
 
-	// https://nominatim.openstreetmap.org/search?q=New%20Jersey&limit=1&format=jsonv2
 	const params = new URLSearchParams({
-		q: 'New Jersey',
+		q: result,
 		limit: '1',
 		format: 'jsonv2'
 	});
