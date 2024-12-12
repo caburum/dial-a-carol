@@ -31,26 +31,22 @@
 	</Card>
 </form>
 
-{#if !data.authenticated}
-	<h1 style="margin-bottom: 0;">Loading previous posts</h1>
+{#if !data.authenticated || !data.calls}
+	<h1 style="margin-bottom: 0;">Loading previous calls</h1>
 {:else}
 	<h1 style="margin-bottom: 0;">
-		{data.entries.length} previous post{data.entries.length == 1 ? '' : 's'}
+		{data.calls.length} previous call{data.calls.length == 1 ? '' : 's'}
 	</h1>
 	{#if (form?.action === 'remove' || form?.action === 'edit') && form?.message}
 		<p class="message">{form.message}</p>
 	{/if}
 	<LayoutGrid>
-		{#each data.entries as entry}
+		{#each data.calls as call}
 			<Cell>
 				<!-- todo: don't waste so much space -->
 				<Card style="height: 100%;">
 					<C.Content>
-						<h3>hi</h3>
-						<!-- todo: render markdown -->
-						{#each entry.contentText.split('\n\n') as line}
-							<p style="word-wrap: break-word;">{line}</p>
-						{/each}
+						<h3>{call.name}</h3>
 					</C.Content>
 					<C.Actions>
 						<form
@@ -59,14 +55,14 @@
 							action="?/remove"
 							onsubmit={handleSubmit}
 						>
-							<input type="hidden" name="id" value={entry.id} />
+							<input type="hidden" name="id" value={call._id} />
 							<Button variant="raised" type="submit" disabled={$loading}>
 								<Label>remove</Label>
 							</Button>
 						</form>
-						<Button variant="raised" disabled={$loading} onclick={() => editingForm.set(entry)}>
+						<!-- <Button variant="raised" disabled={$loading} onclick={() => editingForm.set(call)}>
 							<Label>edit</Label>
-						</Button>
+						</Button> -->
 					</C.Actions>
 				</Card>
 			</Cell>

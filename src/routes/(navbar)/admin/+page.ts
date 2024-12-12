@@ -1,7 +1,8 @@
 import { initialAuthPassword, type AuthRes } from '$lib/auth';
 import { get } from 'svelte/store';
 import type { PageLoad } from './$types';
-import type { Entry, State } from './api/state/+server';
+import type { State } from '../../api/state/+server';
+import type { CallDoc } from '$lib/db.server';
 
 export const load = (async ({ fetch }) => {
 	const password = get(initialAuthPassword);
@@ -16,8 +17,8 @@ export const load = (async ({ fetch }) => {
 	});
 	const data: State | AuthRes = await res.json();
 
-	if (('authenticated' in data && !data.authenticated) || !Array.isArray(data.entries))
-		return { authenticated: false, entries: [], webhook: undefined };
+	if (('authenticated' in data && !data.authenticated) || !Array.isArray(data.calls))
+		return { authenticated: false, entries: [] };
 
-	return { authenticated: true, entries: data.entries as Entry[], webhook: data.webhook as boolean };
+	return { authenticated: true, calls: data.calls as CallDoc[] };
 }) satisfies PageLoad;

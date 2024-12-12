@@ -1,8 +1,8 @@
 import { applyAction, deserialize } from '$app/forms';
 import { invalidateAll } from '$app/navigation';
-import { requireAuth } from '$lib/auth';
+import { initialAuthPassword, requireAuth } from '$lib/auth';
 import type { ActionResult } from '@sveltejs/kit';
-import { writable, type Writable } from 'svelte/store';
+import { get, writable, type Writable } from 'svelte/store';
 
 export const loading = writable(false);
 
@@ -12,12 +12,23 @@ export async function handleSubmit(event: Event & { currentTarget: EventTarget &
 	const body = new FormData(event.currentTarget),
 		formElement = event.currentTarget;
 
-	const password = await requireAuth();
-	if (password === undefined) {
-		// password prompt exited
-		return;
-	}
+	// const password = await requireAuth();
+	// if (password === undefined) {
+	// 	// password prompt exited
+	// 	return;
+	// }
 
+	// body.append('password', password);
+
+	// don't require auth for every change
+	let password = get(initialAuthPassword);
+	if (!password) {
+		password = await requireAuth();
+		if (password === undefined) {
+			// password prompt exited
+			return;
+		}
+	}
 	body.append('password', password);
 
 	loading.set(true);

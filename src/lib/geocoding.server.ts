@@ -3,6 +3,12 @@ const geocodeFiles = import.meta.glob<any>('./geocoding/*.json', {
 	eager: false
 });
 
+export interface GeocodeData {
+	lat: string;
+	lon: string;
+	display_name: string;
+}
+
 export const geocode = async (countryCode: number, phone: string) => {
 	const filePath = `./geocoding/${countryCode}.json`;
 
@@ -94,7 +100,7 @@ export const geocode = async (countryCode: number, phone: string) => {
 	// text to coordinates
 	// https://nominatim.openstreetmap.org/ui/search.html
 	// https://developers.google.com/maps/documentation/geocoding/overview
-	const search = async (q: string) => {
+	const search = async (q: string): Promise<GeocodeData[]> => {
 		const params = new URLSearchParams({
 			q,
 			limit: '1',
@@ -104,7 +110,7 @@ export const geocode = async (countryCode: number, phone: string) => {
 		return await response.json();
 	};
 
-	let data = [];
+	let data: GeocodeData[] = [];
 
 	if (result) data = await search(result);
 

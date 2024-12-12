@@ -1,16 +1,10 @@
 import { authenticate } from '$lib/auth.server';
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-
-export interface Entry {
-	id: string;
-	title: string;
-	contentText: string;
-}
+import { db, type Call, type CallDoc } from '$lib/db.server';
 
 export type State = {
-	entries: Entry[];
-	webhook: boolean;
+	calls: CallDoc[];
 };
 
 export const POST: RequestHandler = async ({ request }) => {
@@ -19,7 +13,9 @@ export const POST: RequestHandler = async ({ request }) => {
 	const authRes = await authenticate(data);
 	if (!authRes.authenticated) return error(401, authRes);
 
+	const calls = await db.collection<Call>('calls').find().sort({ _id: -1 }).toArray();
+
 	return json({
-		entries: []
+		calls: calls
 	});
 };

@@ -1,8 +1,8 @@
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { authenticate } from '$lib/auth.server';
-
-import dummy from '$lib/dummy.json';
+import { db, type Call } from '$lib/db.server';
+import { ISR_SECRET } from '$env/static/private';
 
 export const actions = {
 	auth: async ({ request }) => {
@@ -16,17 +16,20 @@ export const actions = {
 } satisfies Actions;
 
 export const load = (async () => {
+	const collection = db.collection<Call>('calls');
+	const calls = await collection.find().toArray();
+
 	return {
-		features: dummy.map((d) => {
+		features: calls.map((c) => {
 			// todo: add some randomness to coords if they are duplicates
 			return {
 				type: 'Feature' as const,
 				properties: {
-					// name: d.display_name
+					// name: c.name
 				},
 				geometry: {
 					type: 'Point' as const,
-					coordinates: [Number(d.lon), Number(d.lat)]
+					coordinates: [Number(c.lon), Number(c.lat)]
 				}
 			};
 		})
@@ -36,6 +39,6 @@ export const load = (async () => {
 export const config = {
 	isr: {
 		expiration: 120,
-		bypassToken: 'REPLACE_ME_WITH_SECRET_VALUE'
+		bypassToken: ISR_SECRET
 	}
 };
