@@ -23,7 +23,7 @@
 	</Dialog>
 </form>
 
-<h1>Publish a New Notification</h1>
+<h1>Log New Caller</h1>
 
 <form method="POST" action="?/create" autocomplete="off" onsubmit={handleSubmit}>
 	<Card class="form">

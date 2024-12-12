@@ -5,7 +5,9 @@
 	import Textfield from '@smui/textfield';
 	import { autoGrowHeight } from '$lib/actions';
 	import { editingForm, loading } from '$lib/form';
-	import type { ActionData } from '../routes/$types';
+	import type { ActionData } from '../routes/(navbar)/admin/$types';
+	import PhoneInput from './PhoneInput.svelte';
+	import type { CountryCode, DetailedValue, E164Number } from 'svelte-tel-input/types';
 
 	// pass page's form data to the editor
 
@@ -16,7 +18,19 @@
 
 	let { form, action }: Props = $props();
 
-	let initialData = $editingForm;
+	let initialData = $state($editingForm);
+
+	let phone = $state({
+		value: '',
+		detailedValue: null,
+		valid: false,
+		country: null
+	} as {
+		value: E164Number | null;
+		detailedValue: DetailedValue | null;
+		valid: boolean;
+		country: CountryCode | null;
+	});
 
 	const ContentComponent = $derived(action === 'edit' ? D.Content : C.Content);
 	const ActionsComponent = $derived(action === 'edit' ? D.Actions : C.Actions);
@@ -33,14 +47,14 @@
 	{#if action === 'edit'}
 		<input type="hidden" name="id" value={initialData?.id} />
 	{/if}
-	<Textfield
+	<!-- <Textfield
 		input$required={true}
 		input$maxlength={120}
 		label="Title"
 		input$name="title"
 		value={initialData?.title || ''}
-	/>
-	<Textfield
+	/> -->
+	<!-- <Textfield
 		textarea
 		input$maxlength={50000}
 		input$rows={4}
@@ -48,19 +62,29 @@
 		input$name="contentText"
 		input$use={[autoGrowHeight]}
 		value={initialData?.contentText || ''}
+	/> -->
+	<PhoneInput
+		bind:value={phone.value}
+		bind:detailedValue={phone.detailedValue}
+		bind:valid={phone.valid}
+		bind:selectedCountry={phone.country}
 	/>
+	Parsed number: {phone.value} ({phone.valid ? 'valid' : 'invalid'})
+	<!-- {JSON.stringify(phone.detailedValue)} -->
+	<input type="hidden" name="countryCode" value={phone.detailedValue?.countryCallingCode} />
+	<input type="hidden" name="phone" value={phone.detailedValue?.nationalNumber} />
 </ContentComponent>
 <ActionsComponent>
 	{#if action === 'edit'}
 		<Button variant="raised" action="close" type="button">
 			<Label>Cancel</Label>
 		</Button>
-		<Button variant="raised" type="submit" data-mdc-dialog-button-default>
-			<Label>Edit</Label>
+		<Button variant="raised" type="submit" data-mdc-dialog-button-default disabled={!phone.valid}>
+			<Label>Save</Label>
 		</Button>
 	{:else if action === 'create'}
-		<Button variant="raised" type="submit" disabled={$loading}>
-			<Label>Send Notification</Label>
+		<Button variant="raised" type="submit" disabled={$loading || !phone.valid}>
+			<Label>Submit</Label>
 		</Button>
 	{/if}
 </ActionsComponent>
