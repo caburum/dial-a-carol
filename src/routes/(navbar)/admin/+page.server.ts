@@ -6,6 +6,14 @@ import { db, logCall } from '$lib/db.server';
 import { ObjectId } from 'mongodb';
 
 export const actions = {
+	auth: async ({ request }) => {
+		const data = await request.formData();
+
+		const authRes = await authenticate(data);
+		if (!authRes.authenticated) return fail(401, authRes);
+
+		return authRes;
+	},
 	create: async ({ request }) => {
 		const res = { action: 'create' };
 		const data = await request.formData();

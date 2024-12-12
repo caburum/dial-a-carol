@@ -1,19 +1,6 @@
-import { fail } from '@sveltejs/kit';
-import type { Actions, PageServerLoad } from './$types';
-import { authenticate } from '$lib/auth.server';
+import type { PageServerLoad } from './$types';
 import { db, type Call } from '$lib/db.server';
 import { ISR_SECRET } from '$env/static/private';
-
-export const actions = {
-	auth: async ({ request }) => {
-		const data = await request.formData();
-
-		const authRes = await authenticate(data);
-		if (!authRes.authenticated) return fail(401, authRes);
-
-		return authRes;
-	}
-} satisfies Actions;
 
 export const load = (async () => {
 	const collection = db.collection<Call>('calls');
