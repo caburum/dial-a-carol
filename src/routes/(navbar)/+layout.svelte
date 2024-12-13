@@ -25,14 +25,30 @@
 			<LoadingRing loading={$loading} />
 			<IconButton
 				class="material-icons"
+				aria-label="View map"
+				title="View map"
+				onclick={() => {
+					open('/', '_blank');
+				}}>map</IconButton
+			>
+			<IconButton
+				class="material-icons"
 				aria-label="Logout"
 				title="Logout"
 				onclick={() => {
 					$initialAuthPassword = undefined;
 				}}>logout</IconButton
 			>
-			<IconButton class="material-icons" aria-label="Refresh" title="Refresh" onclick={() => invalidateAll()}
-				>refresh</IconButton
+			<IconButton
+				class="material-icons"
+				aria-label="Refresh"
+				title="Refresh"
+				onclick={() => {
+					loading.set(true);
+					invalidateAll().finally(() => {
+						loading.set(false);
+					});
+				}}>refresh</IconButton
 			>
 		</TAB.Section>
 	</TAB.Row>

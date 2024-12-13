@@ -33,4 +33,7 @@
 			transform: rotate(0deg);
 		}
 	}
+	:global(.mdc-icon-button:disabled:has(.loadingRing)) {
+		color: currentColor;
+	}
 </style>

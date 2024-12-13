@@ -4,6 +4,9 @@
 	import 'mapbox-gl/dist/mapbox-gl.css';
 	import { onDestroy, onMount } from 'svelte';
 	import type { PageData } from './$types';
+	import { invalidateAll } from '$app/navigation';
+	import { loading } from '$lib/form';
+	import LoadingRing from '$lib/LoadingRing.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -81,15 +84,7 @@
 						],
 						// Adjust the heatmap radius by zoom level
 						// 'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 0, 2, 9, 20],
-						'heatmap-radius': [
-							'interpolate',
-							['linear'],
-							['zoom'],
-							4,
-							['interpolate', ['linear'], ['heatmap-density'], 0, 10, 1, 200],
-							9,
-							['interpolate', ['linear'], ['heatmap-density'], 0, 60, 1, 500]
-						]
+						'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 4, 15, 9, 100]
 						// Transition from heatmap to circle layer by zoom level
 						// 'heatmap-opacity': ['interpolate', ['linear'], ['zoom'], 7, 1, 9, 0]
 					}
@@ -98,7 +93,19 @@
 			);
 		});
 
-		map.on('move', () => console.log(map.getCenter(), map.getZoom()));
+		// map.on('move', () => console.log(map.getCenter(), map.getZoom()));
+	});
+
+	const refresh = () => {
+		loading.set(true);
+		invalidateAll().finally(() => {
+			loading.set(false);
+		});
+	};
+
+	onMount(() => {
+		const interval = setInterval(refresh, 2 * 60000);
+		return () => clearInterval(interval);
 	});
 
 	onDestroy(() => {
@@ -106,7 +113,17 @@
 	});
 </script>
 
+<svelte:window
+	onkeypress={(e) => {
+		if (e.key === 'r') refresh();
+	}}
+/>
+
 <div class="mapContainer" bind:this={mapContainer}></div>
+
+<div class="buttons">
+	<LoadingRing loading={$loading} />
+</div>
 
 <style>
 	:global(body) {
@@ -119,5 +136,15 @@
 		width: 100%;
 		height: 100%;
 		overflow: hidden;
+	}
+
+	.buttons {
+		position: fixed;
+		top: 0;
+		right: 0;
+		padding: 1rem;
+		z-index: 1000;
+
+		color: white;
 	}
 </style>
