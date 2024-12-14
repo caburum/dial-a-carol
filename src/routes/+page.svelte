@@ -1,5 +1,5 @@
 <script lang="ts">
-	import mapboxgl, { type Map } from 'mapbox-gl';
+	import mapboxgl, { type Map, type GeoJSONSource } from 'mapbox-gl';
 	import { PUBLIC_MAPBOX_ACCESS_TOKEN } from '$env/static/public';
 	import 'mapbox-gl/dist/mapbox-gl.css';
 	import { onDestroy, onMount } from 'svelte';
@@ -12,7 +12,7 @@
 
 	let mapContainer: HTMLDivElement,
 		map: Map,
-		isMapLoaded = false;
+		isMapLoaded = $state(false);
 
 	onMount(async () => {
 		if (map) return; // initialize map only once
@@ -94,6 +94,14 @@
 		});
 
 		// map.on('move', () => console.log(map.getCenter(), map.getZoom()));
+	});
+
+	$effect(() => {
+		console.log(data.features);
+		map?.getSource<GeoJSONSource>('calls')?.setData({
+			type: 'FeatureCollection',
+			features: data.features
+		});
 	});
 
 	const refresh = () => {
