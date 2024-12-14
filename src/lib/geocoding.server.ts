@@ -101,6 +101,7 @@ export const geocode = async (countryCode: number, phone: string) => {
 		}
 
 		// sometimes we get stuck nearby, causing a lot fallback to us
+		// fixme: still isn't getting everything
 		testNearLast(mid);
 	} else {
 		console.log(`geocode file not found for country code: ${countryCode}`);
