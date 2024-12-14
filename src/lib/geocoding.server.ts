@@ -18,16 +18,53 @@ export const geocode = async (countryCode: number, phone: string) => {
 		const ranges: ([string, string] | [string, string, string])[] = await geocodeFiles[filePath]();
 
 		let left = 0,
-			right = ranges.length - 1;
+			right = ranges.length - 1,
+			mid = 0;
 
 		let iter = 25;
 
+		const testNearLast = (start: number) => {
+			let leftI = start,
+				rightI = start + 1,
+				iter = 200; // just a sanity check
+
+			const test = (i: number) => {
+				const [pattern, country, geocode] = ranges[i];
+				// console.debug({ type: 2, iter, phone, pattern, i });
+				const regex = new RegExp(`^${pattern}`);
+				if (regex.test(phone)) {
+					if (geocode) {
+						result = geocode;
+						result += `, ${country}`;
+					} else {
+						result = country;
+					}
+					return true;
+				}
+				return false;
+			};
+
+			while ((leftI >= 0 || rightI < ranges.length) && iter-- > 0) {
+				if (leftI >= 0) {
+					if (test(leftI)) return true;
+					leftI--;
+				}
+
+				if (rightI < ranges.length) {
+					if (test(rightI)) return true;
+					rightI++;
+				}
+			}
+
+			throw new Error('got stuck on range');
+		};
+
 		outer: while (left < right && iter-- > 0) {
 			if (iter === 0) throw new Error('max halving iterations reached');
-			const mid = Math.floor((left + right) / 2);
+			mid = Math.floor((left + right) / 2);
 
 			const [currentPattern, country, geocode] = ranges[mid];
-			// console.log({ iter, phone, currentPattern, left, mid, right });
+			// console.debug({ iter, phone, currentPattern, left, mid, right });
 
 			for (let i = 0; i < phone.length; i++) {
 				const patternC = currentPattern[i];
@@ -35,38 +72,7 @@ export const geocode = async (countryCode: number, phone: string) => {
 				if (patternC === '[') {
 					result = currentPattern;
 
-					let leftI = mid,
-						rightI = mid + 1,
-						iter = 200; // just a sanity check
-
-					const test = (i: number) => {
-						const [pattern, country, geocode] = ranges[i];
-						const regex = new RegExp(`^${pattern}`);
-						if (regex.test(phone)) {
-							if (geocode) {
-								result = geocode;
-								result += `, ${country}`;
-							} else {
-								result = country;
-							}
-							return true;
-						}
-						return false;
-					};
-
-					while ((leftI >= 0 || rightI < ranges.length) && iter-- > 0) {
-						if (leftI >= 0) {
-							if (test(leftI)) break outer;
-							leftI--;
-						}
-
-						if (rightI < ranges.length) {
-							if (test(rightI)) break outer;
-							rightI++;
-						}
-					}
-
-					throw new Error('got stuck on range');
+					testNearLast(mid);
 				}
 
 				const phoneN = Number(phone[i]),
@@ -93,6 +99,9 @@ export const geocode = async (countryCode: number, phone: string) => {
 				}
 			}
 		}
+
+		// sometimes we get stuck nearby, causing a lot fallback to us
+		testNearLast(mid);
 	} else {
 		console.log(`geocode file not found for country code: ${countryCode}`);
 	}
@@ -106,7 +115,11 @@ export const geocode = async (countryCode: number, phone: string) => {
 			limit: '1',
 			format: 'jsonv2'
 		});
-		const response = await fetch(`https://nominatim.openstreetmap.org/search?${params}`);
+		const response = await fetch(`https://nominatim.openstreetmap.org/search?${params}`, {
+			headers: {
+				'User-Agent': 'dial-a-carol'
+			}
+		});
 		return await response.json();
 	};
 
@@ -116,6 +129,7 @@ export const geocode = async (countryCode: number, phone: string) => {
 
 	// try just country search
 	if (data.length === 0) {
+		console.log(`falling back to country search for ${countryCode} ${phone}`);
 		const countries: Record<string, string> = await geocodeFiles['./geocoding/countries.json']();
 		data = await search(countries[countryCode]);
 	}
