@@ -190,6 +190,7 @@
 <div class="mapContainer" bind:this={mapContainer}></div>
 
 <div class="buttons">
+	<h1>{data.count.toLocaleString()} calls</h1>
 	<LoadingRing loading={$loading} />
 </div>
 
@@ -212,7 +213,12 @@
 		right: 0;
 		padding: 1rem;
 		z-index: 1000;
+		text-align: right;
 
 		color: white;
+	}
+
+	h1 {
+		margin: 0;
 	}
 </style>

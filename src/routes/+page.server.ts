@@ -31,7 +31,8 @@ export const load = (async ({ setHeaders }) => {
 						}
 					: null;
 			})
-			.filter((i) => i !== null)
+			.filter((i) => i !== null),
+		count: calls.length
 	};
 }) satisfies PageServerLoad;
 
