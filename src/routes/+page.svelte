@@ -88,7 +88,7 @@
 						],
 						// Adjust the heatmap radius by zoom level
 						// 'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 0, 2, 9, 20],
-						'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 4, 10, 9, 100]
+						'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 4, 8, 9, 100]
 						// Transition from heatmap to circle layer by zoom level
 						// 'heatmap-opacity': ['interpolate', ['linear'], ['zoom'], 7, 1, 9, 0]
 					}
