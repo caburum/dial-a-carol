@@ -26,8 +26,8 @@
 			projection: {
 				name: 'mercator' // 2d
 			},
-			center: [-50, 20],
-			zoom: 2
+			center: [-3.5, 37.5],
+			zoom: 1.3
 		});
 
 		map.on('load', async () => {
@@ -83,12 +83,12 @@
 							'rgba(255,95,5,0)',
 							0.2,
 							'rgba(255,95,5,0.2)',
-							1,
-							'rgba(255,95,5,0.8)'
+							0.8,
+							'rgba(255,95,5,0.7)'
 						],
 						// Adjust the heatmap radius by zoom level
 						// 'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 0, 2, 9, 20],
-						'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 4, 15, 9, 100]
+						'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 4, 10, 9, 100]
 						// Transition from heatmap to circle layer by zoom level
 						// 'heatmap-opacity': ['interpolate', ['linear'], ['zoom'], 7, 1, 9, 0]
 					}
