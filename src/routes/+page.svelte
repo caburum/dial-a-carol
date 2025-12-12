@@ -1,5 +1,5 @@
 <script lang="ts">
-	import mapboxgl, { type Map, type GeoJSONSource } from 'mapbox-gl';
+	import mapboxgl, { type Map, type GeoJSONSource, type GeoJSONFeature } from 'mapbox-gl';
 	import { PUBLIC_MAPBOX_ACCESS_TOKEN } from '$env/static/public';
 	import 'mapbox-gl/dist/mapbox-gl.css';
 	import { onDestroy, onMount } from 'svelte';
@@ -7,12 +7,15 @@
 	import { invalidateAll } from '$app/navigation';
 	import { loading } from '$lib/form';
 	import LoadingRing from '$lib/LoadingRing.svelte';
+	import { point, booleanPointInPolygon } from '@turf/turf';
+	import type { Feature, MultiPolygon, Polygon } from 'geojson';
 
 	let { data }: { data: PageData } = $props();
 
 	let mapContainer: HTMLDivElement,
 		map: Map,
-		isMapLoaded = $state(false);
+		isMapLoaded = $state(false),
+		boundaries: Feature<Polygon | MultiPolygon>[] = $state([]);
 
 	onMount(async () => {
 		if (map) return; // initialize map only once
@@ -27,8 +30,9 @@
 			zoom: 2
 		});
 
-		map.on('load', () => {
+		map.on('load', async () => {
 			isMapLoaded = true;
+			(window as any).map = map;
 
 			map.addSource('calls', {
 				type: 'geojson',
@@ -91,6 +95,34 @@
 				},
 				'waterway-label'
 			);
+
+			// https://docs.mapbox.com/mapbox-gl-js/assets/us_states.geojson
+			// https://raw.githubusercontent.com/datasets/geo-countries/main/data/countries.geojson
+			// /boundaries.geojson
+			let boundariesData: {
+				type: 'FeatureCollection';
+				features: Feature<Polygon | MultiPolygon>[];
+			} = await fetch('./boundaries.geojson').then((r) => r.json());
+
+			map.addSource('boundaries', {
+				type: 'geojson',
+				data: boundariesData
+			});
+			boundaries = boundariesData.features;
+
+			map.addLayer(
+				{
+					id: 'boundaries-fill',
+					type: 'fill',
+					source: 'boundaries',
+					paint: {
+						'fill-color': 'transparent',
+						'fill-opacity': 0.5
+					}
+				},
+				'calls-heat'
+			);
+			console.log('done loading');
 		});
 
 		// map.on('move', () => console.log(map.getCenter(), map.getZoom()));
@@ -101,6 +133,34 @@
 		map?.getSource<GeoJSONSource>('calls')?.setData({
 			type: 'FeatureCollection',
 			features: data.features
+		});
+
+		console.log('checking occupied boundaries...');
+		const occupiedBoundaries = new Set();
+
+		Promise.all(
+			data.features.map((feature) => {
+				return new Promise<void>((resolve) => {
+					const pt = point(feature.geometry.coordinates);
+					for (const boundaryFeature of boundaries) {
+						if (booleanPointInPolygon(pt, boundaryFeature.geometry)) {
+							occupiedBoundaries.add(boundaryFeature.id);
+							break;
+						}
+					}
+					resolve();
+				});
+			})
+		).then(() => {
+			console.log('finished checking occupied boundaries', occupiedBoundaries);
+			map.getLayer('boundaries-fill') &&
+				map.setPaintProperty('boundaries-fill', 'fill-color', [
+					'match',
+					['id'], // ['get', 'name'],
+					Array.from(occupiedBoundaries),
+					'#13294B', // Highlight color
+					'transparent' // Default color (no match)
+				]);
 		});
 	});
 

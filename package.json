@@ -45,9 +45,11 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@turf/turf": "^7.3.1",
 		"@vercel/edge-config": "^1.4.0",
 		"mapbox-gl": "^3.8.0",
 		"mongodb": "^6.11.0",
-		"svelte-tel-input": "^3.5.2"
+		"svelte-tel-input": "^3.5.2",
+		"web-csv-toolbox": "^0.14.0"
 	}
 }
