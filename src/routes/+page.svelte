@@ -152,8 +152,8 @@
 			projection: {
 				name: 'mercator' // 2d
 			},
-			center: [-3.5, 37.5],
-			zoom: 1.3
+			center: [-5.5, 42],
+			zoom: 1.9
 		});
 
 		map.on('load', async () => {
