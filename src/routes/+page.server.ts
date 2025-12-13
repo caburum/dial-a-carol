@@ -39,7 +39,7 @@ export const load = (async ({ setHeaders }) => {
 					},
 					geometry: {
 						type: 'Point' as const,
-						coordinates: lonlat // [Number(c.lon), Number(c.lat)]
+						coordinates: lonlat as [number, number] // [Number(c.lon), Number(c.lat)]
 					}
 				};
 			})

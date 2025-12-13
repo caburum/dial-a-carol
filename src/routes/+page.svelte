@@ -37,7 +37,7 @@
 		console.log('triggering confetti at', coords, '->', x, y);
 
 		// Create confetti particles
-		const particleCount = 20;
+		const particleCount = 30;
 		for (let i = 0; i < particleCount; i++) {
 			const angle = (Math.PI * 2 * i) / particleCount;
 			const speed = 2 + Math.random() * 2;
@@ -47,7 +47,7 @@
 				y,
 				vx: Math.cos(angle) * speed,
 				vy: Math.sin(angle) * speed - 0.5, // Upward bias
-				life: 100 + Math.random() * 60,
+				life: 180 + Math.random() * 100,
 				maxLife: 300
 			});
 		}
@@ -148,6 +148,7 @@
 			container: mapContainer,
 			accessToken: PUBLIC_MAPBOX_ACCESS_TOKEN,
 			style: 'mapbox://styles/mapbox/dark-v11',
+			attributionControl: false,
 			projection: {
 				name: 'mercator' // 2d
 			},
@@ -168,7 +169,7 @@
 					properties: {},
 					geometry: {
 						type: 'Point' as const,
-						coordinates: [randomLng, randomLat]
+						coordinates: [randomLng, randomLat] as [number, number]
 					}
 				};
 				data = {
@@ -303,7 +304,7 @@
 			const startIdx = previousFeaturesCount;
 			for (let i = startIdx; i < data.features.length; i++) {
 				const feature = data.features[i];
-				triggerConfetti(feature.geometry.coordinates as [number, number]);
+				triggerConfetti(feature.geometry.coordinates);
 			}
 		}
 		previousFeaturesCount = data.features.length;
