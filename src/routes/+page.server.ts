@@ -3,15 +3,6 @@ import type { PageServerLoad } from './$types';
 import { ISR_SECRET } from '$env/static/private';
 import { getCalls } from '$lib/spreadsheet';
 
-let seed = 42;
-let state = seed % 2147483647; // Use a large prime number for the modulus
-if (state <= 0) state += 2147483646;
-function random() {
-	// LCG algorithm
-	state = (state * 16807) % 2147483647;
-	return state / 2147483647;
-}
-
 export const load = (async ({ setHeaders }) => {
 	// const collection = db.collection<Call>('calls');
 	// const calls = await collection.find().toArray();
@@ -21,6 +12,15 @@ export const load = (async ({ setHeaders }) => {
 	setHeaders({
 		'Cache-Control': 'public, max-age=120'
 	});
+
+	let seed = 42;
+	let state = seed % 2147483647; // Use a large prime number for the modulus
+	if (state <= 0) state += 2147483646;
+	function random() {
+		// LCG algorithm
+		state = (state * 16807) % 2147483647;
+		return state / 2147483647;
+	}
 
 	return {
 		features: calls

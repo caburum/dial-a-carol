@@ -15,7 +15,132 @@
 	let mapContainer: HTMLDivElement,
 		map: Map,
 		isMapLoaded = $state(false),
-		boundaries: Feature<Polygon | MultiPolygon>[] = $state([]);
+		boundaries: Feature<Polygon | MultiPolygon>[] = $state([]),
+		previousFeaturesCount = 0,
+		confettiParticles: Array<{
+			x: number;
+			y: number;
+			vx: number;
+			vy: number;
+			life: number;
+			maxLife: number;
+		}> = [],
+		confettiCanvas: HTMLCanvasElement | null = null,
+		animationFrameId: number | null = null;
+
+	function triggerConfetti(coords: [number, number]) {
+		// Convert lng/lat to screen coordinates
+		const point = map.project(coords);
+		const x = point.x;
+		const y = point.y;
+
+		console.log('triggering confetti at', coords, '->', x, y);
+
+		// Create confetti particles
+		const particleCount = 20;
+		for (let i = 0; i < particleCount; i++) {
+			const angle = (Math.PI * 2 * i) / particleCount;
+			const speed = 2 + Math.random() * 2;
+
+			confettiParticles.push({
+				x,
+				y,
+				vx: Math.cos(angle) * speed,
+				vy: Math.sin(angle) * speed - 0.5, // Upward bias
+				life: 100 + Math.random() * 60,
+				maxLife: 300
+			});
+		}
+
+		// Start animation
+		if (confettiCanvas && confettiParticles.length > 0) {
+			animateConfetti();
+		}
+	}
+
+	function animateConfetti() {
+		if (!confettiCanvas) return;
+
+		const ctx = confettiCanvas.getContext('2d');
+		if (!ctx) return;
+
+		// Clear canvas
+		ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+
+		// Update and draw particles
+		for (let i = confettiParticles.length - 1; i >= 0; i--) {
+			const p = confettiParticles[i];
+			p.life -= 1;
+
+			if (p.life <= 0) {
+				confettiParticles.splice(i, 1);
+				continue;
+			}
+
+			// Apply gravity
+			p.vy += 0.1;
+			p.x += p.vx;
+			p.y += p.vy;
+
+			// Fade out
+			const alpha = p.life / p.maxLife;
+			ctx.fillStyle = `rgba(255, 95, 5, ${alpha * 0.8})`;
+			ctx.beginPath();
+			ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+			ctx.fill();
+		}
+
+		if (confettiParticles.length > 0) {
+			animationFrameId = requestAnimationFrame(animateConfetti);
+		}
+	}
+
+	function waitForConfettiToEnd(): Promise<void> {
+		return new Promise((resolve) => {
+			const checkInterval = setInterval(() => {
+				if (confettiParticles.length === 0) {
+					clearInterval(checkInterval);
+					resolve();
+				}
+			}, 100);
+		});
+	}
+
+	let pendingBoundaryUpdate: Promise<void> | null = null;
+
+	async function updateOccupiedBoundaries() {
+		const occupiedBoundaries = new Set();
+
+		// Wait for any active confetti to finish
+		if (confettiParticles.length > 0) {
+			await waitForConfettiToEnd();
+		}
+
+		await Promise.all(
+			data.features.map((feature) => {
+				return new Promise<void>((resolve) => {
+					const pt = point(feature.geometry.coordinates);
+					for (const boundaryFeature of boundaries) {
+						if (booleanPointInPolygon(pt, boundaryFeature.geometry)) {
+							occupiedBoundaries.add(boundaryFeature.id);
+							break;
+						}
+					}
+					resolve();
+				});
+			})
+		);
+
+		console.log('finished checking occupied boundaries', occupiedBoundaries);
+		map.getLayer('boundaries-fill') &&
+			map.setPaintProperty('boundaries-fill', 'fill-color', [
+				'match',
+				['id'],
+				Array.from(occupiedBoundaries),
+				'#13294B',
+				'transparent'
+			]);
+	}
 
 	onMount(async () => {
 		if (map) return; // initialize map only once
@@ -33,6 +158,24 @@
 		map.on('load', async () => {
 			isMapLoaded = true;
 			(window as any).map = map;
+
+			// Dev function to trigger fake call
+			(window as any).addFakeCall = () => {
+				const randomLng = -180 + Math.random() * 360;
+				const randomLat = -90 + Math.random() * 180;
+				const newFeature = {
+					type: 'Feature' as const,
+					properties: {},
+					geometry: {
+						type: 'Point' as const,
+						coordinates: [randomLng, randomLat]
+					}
+				};
+				data = {
+					...data,
+					features: [...data.features, newFeature]
+				};
+			};
 
 			map.addSource('calls', {
 				type: 'geojson',
@@ -96,6 +239,25 @@
 				'waterway-label'
 			);
 
+			// Create confetti canvas overlay
+			confettiCanvas = document.createElement('canvas');
+			confettiCanvas.style.position = 'absolute';
+			confettiCanvas.style.top = '0';
+			confettiCanvas.style.left = '0';
+			confettiCanvas.style.zIndex = '10';
+			confettiCanvas.style.pointerEvents = 'none';
+			confettiCanvas.width = mapContainer.offsetWidth;
+			confettiCanvas.height = mapContainer.offsetHeight;
+			mapContainer.appendChild(confettiCanvas);
+
+			// Listen to map resize to update canvas size
+			map.on('resize', () => {
+				if (confettiCanvas) {
+					confettiCanvas.width = mapContainer.offsetWidth;
+					confettiCanvas.height = mapContainer.offsetHeight;
+				}
+			});
+
 			// https://docs.mapbox.com/mapbox-gl-js/assets/us_states.geojson
 			// https://raw.githubusercontent.com/datasets/geo-countries/main/data/countries.geojson
 			// /boundaries.geojson
@@ -123,6 +285,9 @@
 				'calls-heat'
 			);
 			console.log('done loading');
+
+			// Check occupied boundaries on initial load
+			updateOccupiedBoundaries();
 		});
 
 		// map.on('move', () => console.log(map.getCenter(), map.getZoom()));
@@ -130,38 +295,30 @@
 
 	$effect(() => {
 		console.log(data.features);
+
+		// Detect new calls and trigger confetti
+		const newCalls = data.features.length - previousFeaturesCount;
+		if (newCalls > 0 && previousFeaturesCount > 0) {
+			// Get the newly added features
+			const startIdx = previousFeaturesCount;
+			for (let i = startIdx; i < data.features.length; i++) {
+				const feature = data.features[i];
+				triggerConfetti(feature.geometry.coordinates as [number, number]);
+			}
+		}
+		previousFeaturesCount = data.features.length;
+
+		console.log('feature count changed, updating map source...');
+
 		map?.getSource<GeoJSONSource>('calls')?.setData({
 			type: 'FeatureCollection',
 			features: data.features
 		});
 
 		console.log('checking occupied boundaries...');
-		const occupiedBoundaries = new Set();
 
-		Promise.all(
-			data.features.map((feature) => {
-				return new Promise<void>((resolve) => {
-					const pt = point(feature.geometry.coordinates);
-					for (const boundaryFeature of boundaries) {
-						if (booleanPointInPolygon(pt, boundaryFeature.geometry)) {
-							occupiedBoundaries.add(boundaryFeature.id);
-							break;
-						}
-					}
-					resolve();
-				});
-			})
-		).then(() => {
-			console.log('finished checking occupied boundaries', occupiedBoundaries);
-			map.getLayer('boundaries-fill') &&
-				map.setPaintProperty('boundaries-fill', 'fill-color', [
-					'match',
-					['id'], // ['get', 'name'],
-					Array.from(occupiedBoundaries),
-					'#13294B', // Highlight color
-					'transparent' // Default color (no match)
-				]);
-		});
+		// Cancel any pending boundary update and start a new one
+		pendingBoundaryUpdate = updateOccupiedBoundaries();
 	});
 
 	const refresh = () => {
