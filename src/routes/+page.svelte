@@ -348,8 +348,8 @@
 <div class="mapContainer" bind:this={mapContainer}></div>
 
 <div class="buttons">
-	<h1>{data.count.toLocaleString()} calls</h1>
 	<LoadingRing loading={$loading} />
+	<h1>{data.count.toLocaleString()} calls</h1>
 </div>
 
 <style>
@@ -367,9 +367,9 @@
 
 	.buttons {
 		position: fixed;
-		top: 0;
+		bottom: 0;
 		right: 0;
-		padding: 1rem;
+		padding: 2rem;
 		z-index: 1000;
 		text-align: right;
 
