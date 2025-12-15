@@ -9,6 +9,8 @@
 	import LoadingRing from '$lib/LoadingRing.svelte';
 	import { point, booleanPointInPolygon } from '@turf/turf';
 	import type { Feature, MultiPolygon, Polygon } from 'geojson';
+	import { page, updated } from '$app/stores';
+	import IconButton from '@smui/icon-button';
 
 	let { data }: { data: PageData } = $props();
 
@@ -297,6 +299,8 @@
 	$effect(() => {
 		console.log(data.features);
 
+		if (data.features.length === 0) return; // error state
+
 		// Detect new calls and trigger confetti
 		const newCalls = data.features.length - previousFeaturesCount;
 		if (newCalls > 0 && previousFeaturesCount > 0) {
@@ -323,6 +327,7 @@
 	});
 
 	const refresh = () => {
+		if ($updated) location.reload();
 		loading.set(true);
 		invalidateAll().finally(() => {
 			loading.set(false);
@@ -337,6 +342,14 @@
 	onDestroy(() => {
 		map?.remove();
 	});
+
+	$effect(() => {
+		if ($page.status === 500) {
+			setTimeout(() => {
+				location.reload();
+			}, 5000);
+		}
+	});
 </script>
 
 <svelte:window
@@ -348,6 +361,11 @@
 <div class="mapContainer" bind:this={mapContainer}></div>
 
 <div class="buttons">
+	{#if $updated}
+		<IconButton class="material-icons" aria-label="Update available" title="Update available"
+			>browser_updated</IconButton
+		>
+	{/if}
 	<LoadingRing loading={$loading} />
 	<h1>{data.count.toLocaleString()} calls</h1>
 </div>
