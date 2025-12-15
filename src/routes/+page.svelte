@@ -147,6 +147,7 @@
 
 	onMount(async () => {
 		if (map) return; // initialize map only once
+		loading.set(true);
 		map = new mapboxgl.Map({
 			container: mapContainer,
 			accessToken: PUBLIC_MAPBOX_ACCESS_TOKEN,
@@ -291,7 +292,9 @@
 			console.log('done loading');
 
 			// Check occupied boundaries on initial load
-			updateOccupiedBoundaries();
+			await updateOccupiedBoundaries();
+
+			loading.set(false);
 		});
 
 		// map.on('move', () => console.log(map.getCenter(), map.getZoom()));
@@ -382,7 +385,8 @@
 	.buttons {
 		position: fixed;
 		bottom: 0;
-		right: 0;
+		/* compensating for overscan */
+		right: 1rem;
 		padding: 2rem;
 		z-index: 1000;
 		text-align: right;
