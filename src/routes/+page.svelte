@@ -9,8 +9,9 @@
 	import LoadingRing from '$lib/LoadingRing.svelte';
 	import { point, booleanPointInPolygon } from '@turf/turf';
 	import type { Feature, MultiPolygon, Polygon } from 'geojson';
-	import { page, updated } from '$app/stores';
+	import { updated } from '$app/stores';
 	import IconButton from '@smui/icon-button';
+	import { isOnline } from '$lib/stores';
 
 	let { data }: { data: PageData } = $props();
 
@@ -342,14 +343,6 @@
 	onDestroy(() => {
 		map?.remove();
 	});
-
-	$effect(() => {
-		if ($page.status === 500) {
-			setTimeout(() => {
-				location.reload();
-			}, 5000);
-		}
-	});
 </script>
 
 <svelte:window
@@ -361,6 +354,9 @@
 <div class="mapContainer" bind:this={mapContainer}></div>
 
 <div class="buttons">
+	{#if !$isOnline}
+		<IconButton class="material-icons" aria-label="Offline" title="Offline">cloud_off</IconButton>
+	{/if}
 	{#if $updated}
 		<IconButton class="material-icons" aria-label="Update available" title="Update available"
 			>browser_updated</IconButton
