@@ -331,6 +331,7 @@
 	});
 
 	const refresh = () => {
+		if (!$isOnline) return; // will throw an error
 		if ($updated) location.reload();
 		loading.set(true);
 		invalidateAll().finally(() => {

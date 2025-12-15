@@ -8,8 +8,8 @@
 
 	onMount(() => {
 		setInterval(() => {
-			if (navigator.onLine) {
-				goto('/', { invalidateAll: true });
+			if ($isOnline) {
+				location.reload();
 			}
 		}, 5000);
 	});
